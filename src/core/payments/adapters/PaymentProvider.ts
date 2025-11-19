@@ -1,4 +1,4 @@
-// src/payments/PaymentProvider.ts
+
 import { ChargeInput, ChargeResult, RefundInput, RefundResult } from "../PaymentTypes";
 
 export interface PaymentProvider {
