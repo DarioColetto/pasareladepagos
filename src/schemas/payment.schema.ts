@@ -29,9 +29,10 @@ export const PaymentChargeSchema = z.object({
     .max(255, "La descripción no puede superar los 255 caracteres")
     .optional(),
 
-  // opcionales habituales en cobros
+
   token: z.string().min(1, "token no puede estar vacío").optional(),
   metadata: z.record(z.any()).optional(),
+  
 });
 
 export type PaymentChargeInput = z.infer<typeof PaymentChargeSchema>;
