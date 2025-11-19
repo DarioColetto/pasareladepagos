@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 export const PaymentChargeSchema = z.object({
+  provider: z.string().min(1, "provider es requerido"),
   amount: z
     .number({
       required_error: "El campo 'amount' es obligatorio",
@@ -32,6 +33,7 @@ export const PaymentChargeSchema = z.object({
 
   token: z.string().min(1, "token no puede estar vacío").optional(),
   metadata: z.record(z.any()).optional(),
+  
   
 });
 

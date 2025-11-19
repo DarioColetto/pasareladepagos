@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 export const PaymentRefundSchema = z.object({
+provider: z.string().min(1, "provider es requerido"),
   paymentId: z
     .string({
       required_error: "El campo 'paymentId' es obligatorio",
