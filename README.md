@@ -85,7 +85,8 @@ npm start
 ### 4. Ejecutar tests
 
 ```bash
-npm test
+npm run test
+npm run test:coverage
 ```
 
 ## 🌐 Endpoints Principales
