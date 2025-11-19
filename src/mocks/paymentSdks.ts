@@ -1,5 +1,3 @@
-// src/mocks/paymentSdks.ts
-
 export function createMockStripeSdk() {
   return {
     charges: {
