@@ -184,7 +184,7 @@ npm start
 
 ## 🌐 API Endpoints
 
-### POST /payments/charge
+### POST /payments/
 
 Realiza un cargo mediante el proveedor especificado.
 
@@ -208,6 +208,39 @@ Realiza un cargo mediante el proveedor especificado.
   "status": "approved",
   "raw": {}
 }
+```
+## 🔍 Flujo de Ejecución — Cargo de Pago
+
+```mermaid
+sequenceDiagram
+    participant C as Cliente
+    participant A as API Routes
+    participant F as PaymentService (Facade)
+    participant FY as PaymentFactory (Factory)
+    participant D as Decorators
+    participant S as PaymentStrategy (Strategy)
+    participant CM as CapturePaymentCommand (Command)
+    participant E as EventBus (Observer)
+
+    C->>A: POST /payments/charge
+    A->>F: PaymentService.charge()
+    F->>FY: PaymentFactory.create(provider)
+    FY-->>F: PaymentStrategy
+    F->>D: new RetryDecorator(TelemetryDecorator(strategy))
+    F->>CM: new CapturePaymentCommand(decorated, input)
+    CM->>D: charge(input)
+    D->>S: charge(input)
+    S-->>D: ChargeResult
+    D-->>CM: ChargeResult
+
+    alt status === "approved"
+        CM->>E: emit("PaymentCaptured", payload)
+    else status === "declined"
+        CM->>E: emit("PaymentFailed", payload)
+    end
+
+    CM-->>A: ChargeResult
+    A-->>C: 200 OK + Response
 ```
 
 ### POST /payments/refund
@@ -282,14 +315,14 @@ expect(spyProvider.payCallCount).toBe(1);
 
 ## 👥 Integrantes del Equipo
 
--   Colleto, Dario\
--   Kessler, Juan Pedro\
+-   Colleto, Dario
+-   Kessler, Juan Pedro
 -   Benamo Ortega, Joaquín
 
 ## 📚 Recursos Académicos
 
--   Patrones GoF\
--   SOLID\
--   Clean Code\
--   TDD\
+-   Patrones GoF
+-   SOLID
+-   Clean Code
+-   TDD
 -   Arquitectura Hexagonal
