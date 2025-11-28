@@ -291,14 +291,14 @@ expect(spyProvider.payCallCount).toBe(1);
 
 ### Mantenibilidad
 
--   Separación clara de responsabilidades\
--   Código desacoplado\
+-   Separación clara de responsabilidades
+-   Código desacoplado
 -   Tipado fuerte TypeScript
 
 ### Escalabilidad
 
--   Decorators\
--   EventBus\
+-   Decorators
+-   EventBus
 -   CommandBus
 
 ## 🛠️ Tecnologías y Herramientas
