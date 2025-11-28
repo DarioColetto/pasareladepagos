@@ -1,12 +1,25 @@
-
 import { Command } from './Command';
 
 /**
- * Invocador que solo sabe recibir un Command<R> y llamar a execute()
+ * Bus de comandos para ejecutar operaciones
  * 
- * No está acoplado a detalles de pagos ni eventos, solo a la interfaz
+ * Patrón Command: Desacopla el objeto que invoca la operación del que la ejecuta
+ * Permite encolar, logging, y ejecución diferida de comandos
  */
 export class CommandBus {
-  async dispatch<R>(cmd: Command<R>) { return cmd.execute(); }
+  /**
+   * Ejecuta un comando y devuelve su resultado
+   * 
+   * @param comando - Comando a ejecutar
+   * @returns Promesa con el resultado del comando
+   */
+  async dispatch<R>(comando: Command<R>) { 
+    return comando.execute(); 
+  }
 }
+
+/**
+ * Instancia singleton del Command Bus
+ * Proporciona un punto de acceso global al bus de comandos
+ */
 export const commandBus = new CommandBus();

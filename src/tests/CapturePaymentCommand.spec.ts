@@ -1,18 +1,23 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { CapturePaymentCommand } from '../core/commands/CapturePaymentCommand'; // ajusta ruta
+import { CapturePaymentCommand } from '../core/commands/CapturePaymentCommand';
 import type { ChargeInput, ChargeResult } from '../core/payments/PaymentTypes';
 import type { PaymentStrategy } from '../core/payments/strategies/PaymentStrategy';
-import { eventBus } from '../core/events/EventBus'; // usa misma ruta que en el comando
+import { eventBus } from '../core/events/EventBus'; 
 
+/**
+ * Suite de pruebas para CapturePaymentCommand
+ */
 describe('CapturePaymentCommand', () => {
   const provider = 'stripe';
 
   beforeEach(() => {
     vi.restoreAllMocks();
-    // Convertimos emit en un spy y evitamos que ejecute lógica real
     vi.spyOn(eventBus, 'emit').mockResolvedValue();
   });
 
+  /**
+   * Prueba: Pago aprobado emite evento PaymentCaptured
+   */
   it('cuando el pago es aprobado debe llamar a strategy.charge y emitir PaymentCaptured', async () => {
     const input: ChargeInput = {
       amount: 100,
@@ -36,7 +41,6 @@ describe('CapturePaymentCommand', () => {
     expect(strategy.charge).toHaveBeenCalledTimes(1);
     expect(strategy.charge).toHaveBeenCalledWith(input);
 
-    // Ahora sí: emit es un spy
     expect(eventBus.emit).toHaveBeenCalledTimes(1);
     expect(eventBus.emit).toHaveBeenCalledWith('PaymentCaptured', {
       paymentId: chargeResult.id,
@@ -47,13 +51,15 @@ describe('CapturePaymentCommand', () => {
     expect(result).toBe(chargeResult);
   });
 
+  /**
+   * Prueba: Pago rechazado emite evento PaymentFailed
+   */
   it('cuando el pago es rechazado debe emitir PaymentFailed', async () => {
     const input: ChargeInput = {
       amount: 100,
       currency: "USD",
       token : 'chi_1224'
     };
-
 
     const chargeResult: ChargeResult = {
       id: 'pay_456',

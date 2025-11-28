@@ -5,37 +5,59 @@ import {
   RefundResult,
 } from "../PaymentTypes";
 import { PaymentProvider } from "./PaymentProvider";
-export class MpAdapter implements PaymentProvider {
+
+/**
+ * Adaptador para Mercado Pago que implementa la interfaz PaymentProvider
+ * 
+ * Patrón Adapter: Adapta la API específica de Mercado Pago a nuestra interfaz uniforme
+ * Permite que el sistema trabaje con diferentes proveedores de forma transparente
+ */
+export class MercadoPagoAdapter implements PaymentProvider {
   constructor(
-    
     private sdk: {
       payments: {
-        create: (p: any) => Promise<any>;
-        refund: (id: string, p: any) => Promise<any>;
+        create: (parametros: any) => Promise<any>;
+        refund: (id: string, parametros: any) => Promise<any>;
       };
     }
   ) {}
-  async pay(i: ChargeInput): Promise<ChargeResult> {
-    const res = await this.sdk.payments.create({
-      transaction_amount: i.amount,
-      token: i.token,
-      description: "Charge",
-      metadata: i.metadata,
+
+  /**
+   * Realiza un cargo mediante Mercado Pago
+   * 
+   * @param input - Datos del cargo a realizar
+   * @returns Promesa con el resultado del cargo
+   */
+  async pay(input: ChargeInput): Promise<ChargeResult> {
+    const respuesta = await this.sdk.payments.create({
+      transaction_amount: input.amount,
+      token: input.token,
+      description: "Cargo realizado",
+      metadata: input.metadata,
     });
+    
     return {
-      id: res.id,
-      status: res.status === "approved" ? "approved" : "declined",
-      raw: res,
+      id: respuesta.id,
+      status: respuesta.status === "approved" ? "approved" : "declined",
+      raw: respuesta,
     };
   }
-  async refund(i: RefundInput): Promise<RefundResult> {
-    const res = await this.sdk.payments.refund(i.paymentId, {
-      amount: i.amount,
+
+  /**
+   * Realiza un reembolso mediante Mercado Pago
+   * 
+   * @param input - Datos del reembolso a realizar
+   * @returns Promesa con el resultado del reembolso
+   */
+  async refund(input: RefundInput): Promise<RefundResult> {
+    const respuesta = await this.sdk.payments.refund(input.paymentId, {
+      amount: input.amount,
     });
+    
     return {
-      id: res.id,
-      status: res.status === "approved" ? "refunded" : "failed",
-      raw: res,
+      id: respuesta.id,
+      status: respuesta.status === "approved" ? "refunded" : "failed",
+      raw: respuesta,
     };
   }
 }

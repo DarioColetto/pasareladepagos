@@ -6,10 +6,12 @@ import {
   PaymentEvents 
 } from '../core/payments/PaymentTypes';
 
-// Mock que usa TUS tipos reales
+/**
+ * Crea un servicio de pago mock para testing
+ * @returns {Object} Servicio de pago mock
+ */
 const createPaymentService = () => ({
   processCharge: vi.fn().mockImplementation(async (input: ChargeInput): Promise<ChargeResult> => {
-    // Simular lógica de negocio real
     if (input.amount <= 0) {
       return {
         id: `pay_${Date.now()}`,
@@ -26,7 +28,6 @@ const createPaymentService = () => ({
       };
     }
 
-    // Pago aprobado
     return {
       id: `pay_${Date.now()}`,
       status: 'approved',
@@ -38,11 +39,16 @@ const createPaymentService = () => ({
     };
   }),
 
-  // Eventos simulados
   onPaymentEvent: vi.fn()
 });
 
+/**
+ * Suite de pruebas para el flujo de pagos con tipos reales
+ */
 describe('Payment Flow with Real Types', () => {
+  /**
+   * Prueba: Aprobación de pago válido en ARS
+   */
   it('should approve valid ARS payment', async () => {
     const paymentService = createPaymentService();
     
@@ -63,6 +69,9 @@ describe('Payment Flow with Real Types', () => {
     });
   });
 
+  /**
+   * Prueba: Aprobación de pago válido en USD
+   */
   it('should approve valid USD payment', async () => {
     const paymentService = createPaymentService();
     
@@ -80,6 +89,9 @@ describe('Payment Flow with Real Types', () => {
     });
   });
 
+  /**
+   * Prueba: Rechazo de pago con monto cero
+   */
   it('should decline zero amount payment', async () => {
     const paymentService = createPaymentService();
     
@@ -95,6 +107,9 @@ describe('Payment Flow with Real Types', () => {
     expect(result.raw).toHaveProperty('error', 'Invalid amount');
   });
 
+  /**
+   * Prueba: Rechazo de pago que excede límite
+   */
   it('should decline payment over limit', async () => {
     const paymentService = createPaymentService();
     
@@ -110,6 +125,9 @@ describe('Payment Flow with Real Types', () => {
     expect(result.raw).toHaveProperty('error', 'Amount exceeds limit');
   });
 
+  /**
+   * Prueba: Manejo de pago con metadata
+   */
   it('should handle payment with metadata', async () => {
     const paymentService = createPaymentService();
     

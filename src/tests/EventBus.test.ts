@@ -1,9 +1,13 @@
-// tests/EventBus.test.ts
 import { describe, it, expect, vi } from 'vitest';
 import { EventBus, eventBus } from '../core/events/EventBus';
 
-
+/**
+ * Suite de pruebas para EventBus
+ */
 describe('EventBus (clase)', () => {
+  /**
+   * Prueba: Handler síncrono se ejecuta correctamente
+   */
   it('registra y ejecuta un handler síncrono', async () => {
     const bus = new EventBus();
 
@@ -18,6 +22,9 @@ describe('EventBus (clase)', () => {
     expect(handler).toHaveBeenCalledWith(payload);
   });
 
+  /**
+   * Prueba: Múltiples handlers para mismo evento
+   */
   it('permite múltiples handlers para el mismo evento', async () => {
     const bus = new EventBus();
 
@@ -36,6 +43,9 @@ describe('EventBus (clase)', () => {
     expect(handler2).toHaveBeenCalledWith(payload);
   });
 
+  /**
+   * Prueba: Handlers no se disparan para otros eventos
+   */
   it('no dispara handlers de otros eventos', async () => {
     const bus = new EventBus();
 
@@ -52,11 +62,13 @@ describe('EventBus (clase)', () => {
     expect(failedHandler).not.toHaveBeenCalled();
   });
 
+  /**
+   * Prueba: Handlers asíncronos se manejan correctamente
+   */
   it('espera handlers asíncronos', async () => {
     const bus = new EventBus();
 
     const asyncHandler = vi.fn(async () => {
-      // simulamos una operación async
       await new Promise((resolve) => setTimeout(resolve, 1));
     });
 
@@ -70,7 +82,13 @@ describe('EventBus (clase)', () => {
   });
 });
 
+/**
+ * Suite de pruebas para el singleton eventBus
+ */
 describe('eventBus (singleton exportado)', () => {
+  /**
+   * Prueba: Instancia compartida funciona correctamente
+   */
   it('funciona con la instancia compartida', async () => {
     const handler = vi.fn();
 

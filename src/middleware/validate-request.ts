@@ -1,23 +1,31 @@
 import { Request, Response, NextFunction } from "express";
 import { ZodSchema } from "zod";
 
+/**
+ * Middleware para validar requests Express usando esquemas Zod
+ * 
+ * Valida el cuerpo de la request contra un esquema Zod y responde con errores
+ * detallados si la validación falla
+ * 
+ * @param schema - Esquema Zod para validar el cuerpo de la request
+ * @returns Middleware de Express
+ */
 export const validateRequest =
   (schema: ZodSchema) =>
-  (req: Request, res: Response, next: NextFunction) => {
-    const result = schema.safeParse(req.body);
+  (request: Request, response: Response, next: NextFunction) => {
+    const resultado = schema.safeParse(request.body);
 
-    if (!result.success) {
-      return res.status(400).json({
+    if (!resultado.success) {
+      return response.status(400).json({
         error: "Datos inválidos",
-        details: result.error.issues.map((i) => ({
-          campo: i.path.join("."),
-          mensaje: i.message,
-          // opcionalmente: code: i.code
+        details: resultado.error.issues.map((issue) => ({
+          campo: issue.path.join("."),
+          mensaje: issue.message,
         })),
       });
     }
 
-    
-    req.body = result.data;
+    // Reemplaza el body con los datos validados y parseados
+    request.body = resultado.data;
     next();
   };
