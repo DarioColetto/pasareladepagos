@@ -1,25 +1,27 @@
-// tests/decorators.spec.ts
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-
-// 👇 IMPORTANTE: el path debe coincidir EXACTAMENTE con el que usa tu TelemetryDecorator
+// Mock del logger
 vi.mock('../infra/logger', () => ({
   log: {
     info: vi.fn(),
   },
 }));
 
-
 import { log } from '../infra/logger';
 import { RetryDecorator } from '../core/payments/decorators/RetryDecorator';
 import { TelemetryDecorator } from '../core/payments/decorators/TelemetryDecorator';
 
 beforeEach(() => {
-  // Resetea contadores de los spies entre tests
   vi.clearAllMocks();
 });
 
+/**
+ * Suite de pruebas para RetryDecorator
+ */
 describe('RetryDecorator', () => {
+  /**
+   * Prueba: Reintentos exitosos dentro del límite
+   */
   it('reintenta charge hasta tener éxito dentro del límite de reintentos', async () => {
     let attempts = 0;
 
@@ -34,7 +36,7 @@ describe('RetryDecorator', () => {
       refund: vi.fn(),
     } as any;
 
-    const retry = new RetryDecorator(inner, 2, 0); // 3 intentos, sin delay para tests
+    const retry = new RetryDecorator(inner, 2, 0);
 
     const result = await retry.charge({} as any);
 
@@ -42,6 +44,9 @@ describe('RetryDecorator', () => {
     expect(inner.charge).toHaveBeenCalledTimes(3);
   });
 
+  /**
+   * Prueba: Lanza error al superar reintentos
+   */
   it('lanza el último error si se superan los reintentos', async () => {
     const inner = {
       charge: vi.fn(async () => {
@@ -50,14 +55,20 @@ describe('RetryDecorator', () => {
       refund: vi.fn(),
     } as any;
 
-    const retry = new RetryDecorator(inner, 2, 0); // 2 intentos
+    const retry = new RetryDecorator(inner, 2, 0);
 
     await expect(retry.charge({} as any)).rejects.toThrow('fallo definitivo');
     expect(inner.charge).toHaveBeenCalledTimes(3);
   });
 });
 
+/**
+ * Suite de pruebas para TelemetryDecorator
+ */
 describe('TelemetryDecorator', () => {
+  /**
+   * Prueba: Delegación y logging de charge
+   */
   it('delegates en charge y loguea la operación', async () => {
     const inner = {
       charge: vi.fn(async () => ({ status: 'success' } as any)),
@@ -70,11 +81,9 @@ describe('TelemetryDecorator', () => {
 
     const out = await telemetry.charge(input);
 
-    // delega correctamente
     expect(inner.charge).toHaveBeenCalledTimes(1);
     expect(inner.charge).toHaveBeenCalledWith(input);
 
-    // loguea correctamente
     expect(log.info).toHaveBeenCalledTimes(1);
     expect(log.info).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -87,6 +96,9 @@ describe('TelemetryDecorator', () => {
     expect(out.status).toBe('success');
   });
 
+  /**
+   * Prueba: Delegación y logging de refund
+   */
   it('delegates en refund y loguea la operación', async () => {
     const inner = {
       charge: vi.fn(),
@@ -99,11 +111,9 @@ describe('TelemetryDecorator', () => {
 
     const out = await telemetry.refund(input);
 
-    // delega correctamente
     expect(inner.refund).toHaveBeenCalledTimes(1);
     expect(inner.refund).toHaveBeenCalledWith(input);
 
-    // loguea correctamente
     expect(log.info).toHaveBeenCalledTimes(1);
     expect(log.info).toHaveBeenCalledWith(
       expect.objectContaining({

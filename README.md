@@ -1,152 +1,295 @@
-# 💳 Pasarela de Pagos Modular — Node.js + TypeScript
+# 💳 Pasarela de Pagos Modular --- Node.js + TypeScript
+
+## 📊 Estado del Proyecto
+
+![Tests](https://img.shields.io/badge/Tests-54_passed-00C853?style=for-the-badge&logo=vitest)
+![Coverage](https://img.shields.io/badge/Coverage-90.22%2525-00C853?style=for-the-badge&logo=typescript)
+![Patrones](https://img.shields.io/badge/Patrones-12_implementados-007ACC?style=for-the-badge)
 
 ## 📘 Descripción General
-Este proyecto implementa una **API modular de pagos** desarrollada en **Node.js y TypeScript**, diseñada para demostrar la aplicación práctica de **patrones de diseño de software** en un sistema realista.
 
-La aplicación simula una **pasarela de pagos** que puede operar con diferentes proveedores (ej. Stripe, Mercado Pago), incluyendo manejo de **cobros, reembolsos y webhooks**.  
-Está pensada como **proyecto académico para la materia _Metodología de los Sistemas II_**, aplicando principios de diseño, modularidad y mantenibilidad.
+Este proyecto implementa una API modular de pagos desarrollada en
+Node.js y TypeScript, diseñada para demostrar la aplicación práctica de
+12 patrones de diseño de software en un sistema realista.
 
----
+La aplicación simula una pasarela de pagos que puede operar con
+diferentes proveedores (Stripe, Mercado Pago), incluyendo manejo de
+cobros, reembolsos y eventos.\
+Desarrollado como proyecto académico para la materia Metodología de los
+Sistemas II, aplicando principios de diseño, modularidad y
+mantenibilidad.
 
 ## 🎯 Objetivos del Proyecto
-- Implementar múltiples **patrones de diseño** en un contexto real.
-- Favorecer la **extensibilidad** al permitir agregar nuevos proveedores sin modificar la lógica existente.
-- Desacoplar la lógica de negocio de la capa de presentación (API).
-- Simular comportamientos de un sistema de pagos completo con **mock SDKs**.
 
----
+-   ✅ Implementar 12 patrones de diseño en contexto real\
+-   ✅ Favorecer la extensibilidad --- nuevos proveedores sin modificar
+    lógica existente\
+-   ✅ Desacoplar lógica de negocio de la capa de presentación (API)\
+-   ✅ Testing exhaustivo con 54 tests y 90.22% de cobertura\
+-   ✅ Simular comportamientos reales con mock SDKs
 
-## 🧩 Patrones de Diseño Aplicados
+## 🏆 Patrones de Diseño Implementados (12)
 
-| Tipo | Patrón | Descripción |
-|------|---------|-------------|
-| **Creacional** | **Singleton** | Config y Logger centralizados, asegurando una única instancia global. |
-|  | **Factory / Abstract Factory** | Crea la estrategia adecuada según el proveedor (`Stripe`, `MP`). |
-| **Estructural** | **Adapter** | Unifica interfaces de SDKs externos heterogéneos (Stripe y Mercado Pago). |
-|  | **Decorator** | Añade funcionalidad transversal (reintentos y telemetría) sin alterar el código base. |
-|  | **Facade** | Simplifica el acceso a la lógica de negocio mediante `PaymentService`. |
-| **Comportamiento** | **Command** | Encapsula operaciones (`Charge`, `Refund`) y las ejecuta de forma uniforme. |
-|  | **Observer** | Permite suscribirse a eventos de dominio (p. ej. envío de notificaciones tras cobro). |
-|  | **Strategy** | Define algoritmos alternativos de cobro y reembolso según el proveedor. |
+  -------------------------------------------------------------------------------------
+  Categoría        Patrón      Archivo Ejemplo            Propósito
+  ---------------- ----------- -------------------------- -----------------------------
+  Creacional       Singleton   logger.ts                  Logger centralizado única
+                                                          instancia
 
----
+                   Factory     PaymentFactory.ts          Creación estrategias por
+                   Method                                 proveedor
+
+  Estructural      Adapter     StripeAdapter.ts,          Unificar APIs de proveedores
+                               MpAdapter.ts               externos
+
+                   Decorator   RetryDecorator.ts,         Agregar reintentos y
+                               TelemetryDecorator.ts      telemetría
+
+                   Facade      PaymentService.ts          Simplificar interfaz del
+                                                          subsistema
+
+  Comportamiento   Command     CapturePaymentCommand.ts   Encapsular operaciones como
+                                                          objetos
+
+                   Observer    EventBus.ts                Sistema de eventos
+                                                          desacoplado
+
+                   Strategy    PaymentStrategy.ts         Algoritmos intercambiables
+                                                          por proveedor
+
+  Testing          Dummy       DummyPaymentProvider.ts    Objetos para completar
+                                                          dependencias
+
+                   Stub        StubPaymentProvider.ts     Respuestas predefinidas para
+                                                          tests
+
+                   Spy         SpyPaymentProvider.ts      Registrar interacciones en
+                                                          tests
+
+                   Fake        FakeEventBus.ts            Implementaciones
+                                                          simplificadas
+  -------------------------------------------------------------------------------------
+
+## 🧪 Quality Assurance
+
+### Resultados de Testing
+
+    Test Files:  16 passed (16)
+    Tests:       54 passed (54)
+    Coverage:    90.22% Statements | 81.48% Branch | 97.56% Functions
+    Duration:    4.57s
+
+### Cobertura por Módulo
+
+  Módulo       Statements   Branch   Functions   Lines
+  ------------ ------------ -------- ----------- --------
+  API Routes   88.7%        35.71%   100%        88.7%
+  Commands     100%         88.88%   100%        100%
+  Adapters     100%         60%      100%        100%
+  Strategies   93.93%       100%     90.9%       93.93%
+  Decorators   100%         100%     100%        100%
 
 ## 🏗️ Estructura del Proyecto
 
-```
-root/
-├── src/
-│ ├── api/           # Rutas Express
-│ ├── config/        # Singleton Config
-│ ├── core/
-│ │ ├── commands/     # Command Pattern
-│ │ ├── events/       # EventBus (Observer)
-│ │ ├── payments/
-│ │ │ ├── adapters/   # Adapter Pattern
-│ │ │ ├── strategies/ # Strategy Pattern
-│ │ │ ├── factories/  # Factory Pattern
-│ │ │ ├── decorators/ # Decorator Pattern
-│ │ │ ├── facade/     # Facade Pattern
-│ │ │ └── PaymentTypes.ts
-│ ├── infra/          # Logger Singleton
-| |── schemas/
-│ ├── tests/          # Tests con Vitest + Supertest
-│ └── app.ts          # Bootstrap de la API
-├── package.json
-├── tsconfig.json
-└── README.md
-```
+    payment-system/
+    ├── src/
+    │   ├── api/
+    │   │   └── routes.ts                 # Endpoints Express
+    │   ├── core/
+    │   │   ├── commands/                 # Patrón Command
+    │   │   │   ├── Command.ts
+    │   │   │   ├── CommandBus.ts
+    │   │   │   ├── CapturePaymentCommand.ts
+    │   │   │   └── RefundPaymentCommand.ts
+    │   │   ├── events/                   # Patrón Observer
+    │   │   │   └── EventBus.ts
+    │   │   └── payments/
+    │   │       ├── adapters/             # Patrón Adapter
+    │   │       │   ├── PaymentProvider.ts
+    │   │       │   ├── StripeAdapter.ts
+    │   │       │   └── MpAdapter.ts
+    │   │       ├── decorators/           # Patrón Decorator
+    │   │       │   ├── RetryDecorator.ts
+    │   │       │   └── TelemetryDecorator.ts
+    │   │       ├── facade/               # Patrón Facade
+    │   │       │   ├── PaymentFacade.ts
+    │   │       │   └── PaymentService.ts
+    │   │       ├── factories/            # Patrón Factory
+    │   │       │   └── PaymentFactory.ts
+    │   │       ├── strategies/           # Patrón Strategy
+    │   │       │   ├── PaymentStrategy.ts
+    │   │       │   ├── PaymentContext.ts
+    │   │       │   ├── StripeStrategy.ts
+    │   │       │   └── MpStrategy.ts
+    │   │       └── PaymentTypes.ts       # Tipos TypeScript
+    │   ├── infra/
+    │   │   └── logger.ts                 # Patrón Singleton
+    │   ├── middleware/
+    │   │   └── validate-request.ts       # Validación Zod
+    │   ├── mocks/                        # SDKs Mock para testing
+    │   │   ├── paymentSdks.ts
+    │   │   ├── StripeMock.ts
+    │   │   └── MercadoPagoMock.ts
+    │   ├── schemas/                      # Esquemas validación
+    │   │   ├── payment.schema.ts
+    │   │   └── refund.schema.ts
+    │   ├── tests/                        # Suite de testing
+    │   │   ├── doubles/                  # Test Doubles
+    │   │   │   ├── DummyPaymentProvider.ts
+    │   │   │   ├── StubPaymentProvider.ts
+    │   │   │   ├── SpyPaymentProvider.ts
+    │   │   │   ├── FakeEventBus.ts
+    │   │   │   └── doubles-demo.spec.ts
+    │   │   ├── api.spec.ts
+    │   │   ├── commands-observer.spec.ts
+    │   │   ├── decorators.spec.ts
+    │   │   └── [más tests...]
+    │   └── app.ts                        # Aplicación principal
+    ├── package.json
+    ├── tsconfig.json
+    ├── vitest.config.mts
+    ├── sonar-project.properties
+    └── README.md
 
-## ⚙️ Instalación y Uso
+## ⚡ Quick Start
 
-### 1. Clonar e instalar dependencias
-```bash
-git clone esteREPO
-cd root
+### 1. Instalación
+
+``` bash
+git clone <repository>
+cd payment-system
 npm install
 ```
-### 2. Ejecutar en modo desarrollo
 
-```bash
+### 2. Desarrollo
+
+``` bash
 npm run dev
 ```
-La API se levantará por defecto en:
-📍 http://localhost:3000
 
-### 3. Compilar y ejecutar
+### 3. Testing
 
-```bash
-npm run build
-npm start
-npm run build
-npm start
-```
-
-### 4. Ejecutar tests
-
-```bash
-npm run test
+``` bash
+npm test
 npm run test:coverage
+npm run lint
 ```
 
-## 🌐 Endpoints Principales
+### 4. Producción
 
-Probar con __Postman__ o __curl__
-
-|Método|	Ruta|	Descripción|
-|------|-----|------|
-|POST	|/payments/charge |	Realiza un cobro con el proveedor indicado.|
-POST	|/payments/refund|	Ejecuta un reembolso de un pago.|
-POST |	/webhooks/:provider|	Recibe notificaciones (mock) de proveedores externos.|
-
-### Ejemplo de cobro
-```bash
-curl -X POST http://localhost:3000/payments/charge \
-  -H "Content-Type: application/json" \
-  -d '{"provider":"stripe","amount":2500,"currency":"ARS","token":"tok_test"}'
-```
-### Ejemplo de reembolso
-
-```bash
-curl -X POST http://localhost:3000/payments/refund \
-  -H "Content-Type: application/json" \
-  -d '{"provider":"mp","paymentId":"mp_abc123","amount":1000}'
+``` bash
+npm run build
+npm start
 ```
 
-## 🔍 Flujo interno de ejecución
+## 🌐 API Endpoints
 
-```mermaid
+### POST /payments/charge
 
-sequenceDiagram
-  participant API as API /payments/charge
-  participant Facade as PaymentService (Facade)
-  participant Factory as PaymentFactory
-  participant Strat as PaymentStrategy (Strategy)
-  participant Decor as Retry+Telemetry (Decorator)
-  participant Cmd as CapturePaymentCommand (Command)
-  participant Bus as EventBus (Observer)
+Realiza un cargo mediante el proveedor especificado.
 
-  API->>Facade: charge(provider, input)
-  Facade->>Factory: create(provider)
-  Factory-->>Facade: strategy
-  Facade->>Decor: wrap(strategy)
-  Facade->>Cmd: new CapturePaymentCommand(decor, input)
-  Cmd->>Decor: charge(input)
-  Decor->>Strat: charge(input)
-  Strat-->>Decor: ChargeResult
-  Decor-->>Cmd: ChargeResult
-  Cmd-->>Bus: emit PaymentCaptured/Failed
-  Cmd-->>API: ChargeResult
+**Body:**
+
+``` json
+{
+  "provider": "stripe",
+  "amount": 2500,
+  "currency": "ARS",
+  "token": "tok_test_123",
+  "metadata": {"order_id": "12345"}
+}
 ```
-----
-## 🧠 Beneficios del Diseño
 
-- **Extensible**: agregar un nuevo gateway solo requiere una nueva Strategy y Adapter.
+**Respuesta:**
 
-- **Desacoplado**: la API no conoce detalles internos del proveedor.
+``` json
+{
+  "id": "ch_123",
+  "status": "approved",
+  "raw": {}
+}
+```
 
-- **Reutilizable**: los comandos pueden orquestarse o ejecutarse desde colas.
+### POST /payments/refund
 
-- **Testable**: cada componente se prueba de forma aislada con mocks.
+Realiza un reembolso de un pago existente.
 
-- **Escalable**: los patrones Decorator y Observer permiten incorporar métricas, auditorías o eventos sin modificar la lógica base.
+**Body:**
+
+``` json
+{
+  "provider": "mp",
+  "paymentId": "mp_abc123",
+  "amount": 1000
+}
+```
+
+**Respuesta:**
+
+``` json
+{
+  "id": "re_456",
+  "status": "refunded",
+  "raw": {}
+}
+```
+
+## 🧠 Beneficios Arquitectónicos
+
+### Extensibilidad
+
+``` ts
+class NewProviderAdapter implements PaymentProvider {
+  async pay(input) {}
+  async refund(input) {}
+}
+
+class NewProviderStrategy implements PaymentStrategy {}
+```
+
+### Testabilidad
+
+``` ts
+const spyProvider = new SpyPaymentProvider();
+const fakeEventBus = new FakeEventBus();
+await command.execute();
+expect(spyProvider.payCallCount).toBe(1);
+```
+
+### Mantenibilidad
+
+-   Separación clara de responsabilidades\
+-   Código desacoplado\
+-   Tipado fuerte TypeScript
+
+### Escalabilidad
+
+-   Decorators\
+-   EventBus\
+-   CommandBus
+
+## 🛠️ Tecnologías y Herramientas
+
+  Categoría      Tecnología
+  -------------- ---------------------
+  Runtime        Node.js, TypeScript
+  Framework      Express.js
+  Testing        Vitest, Supertest
+  Validation     Zod
+  Logging        Pino
+  Code Quality   ESLint, SonarCloud
+  Build Tool     TSX
+
+## 👥 Integrantes del Equipo
+
+-   Colleto, Dario\
+-   Kessler, Juan Pedro\
+-   Benamo Ortega, Joaquín
+
+## 📚 Recursos Académicos
+
+-   Patrones GoF\
+-   SOLID\
+-   Clean Code\
+-   TDD\
+-   Arquitectura Hexagonal

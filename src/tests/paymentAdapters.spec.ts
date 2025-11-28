@@ -1,12 +1,15 @@
-// tests/paymentAdapters.spec.ts
 import { describe, it, expect, vi } from "vitest";
-import { MpAdapter } from "../core/payments/adapters/MpAdapter";
+import { MercadoPagoAdapter } from "../core/payments/adapters/MpAdapter";
 import { StripeAdapter } from "../core/payments/adapters/StripeAdapter";
 import { ChargeInput, RefundInput } from "../core/payments/PaymentTypes";
 
-
-
+/**
+ * Suite de pruebas para StripeAdapter
+ */
 describe("StripeAdapter", () => {
+  /**
+   * Prueba: Pay llama al SDK y normaliza resultado
+   */
   it("pay() debe llamar al SDK y devolver un ChargeResult normalizado", async () => {
     const chargesCreate = vi.fn().mockResolvedValue({
       id: "ch_123",
@@ -14,7 +17,7 @@ describe("StripeAdapter", () => {
       status: "succeeded",
     });
 
-    const refundsCreate = vi.fn(); // no se usa en este test pero lo requiere el ctor
+    const refundsCreate = vi.fn();
 
     const fakeStripeSdk = {
       charges: {
@@ -31,13 +34,10 @@ describe("StripeAdapter", () => {
       amount: 1000,
       currency: "ARS",
       token: '12345',
-  
     } as ChargeInput;
-
 
     const result = await adapter.pay(input);
 
-    // 1) Llamó al SDK con el monto correcto
     expect(chargesCreate).toHaveBeenCalledTimes(1);
     expect(chargesCreate).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -45,9 +45,8 @@ describe("StripeAdapter", () => {
       })
     );
 
-    // 2) Mapeo a tu tipo de dominio
     expect(result.id).toBe("ch_123");
-    expect(result.status).toBe("approved"); // porque paid: true
+    expect(result.status).toBe("approved");
     expect(result.raw).toEqual(
       expect.objectContaining({
         id: "ch_123",
@@ -56,6 +55,9 @@ describe("StripeAdapter", () => {
     );
   });
 
+  /**
+   * Prueba: Refund llama al SDK y normaliza resultado
+   */
   it("refund() debe llamar al SDK y devolver un RefundResult normalizado", async () => {
     const chargesCreate = vi.fn();
 
@@ -78,12 +80,10 @@ describe("StripeAdapter", () => {
     const input: RefundInput = {
       paymentId: "ch_123",
       amount: 500,
-      // idem: agrega más campos si tu tipo lo requiere
     } as RefundInput;
 
     const result = await adapter.refund(input);
 
-    // 1) Llamó al SDK con los parámetros esperados
     expect(refundsCreate).toHaveBeenCalledTimes(1);
     expect(refundsCreate).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -92,9 +92,8 @@ describe("StripeAdapter", () => {
       })
     );
 
-    // 2) Normalización de dominio
     expect(result.id).toBe("re_456");
-    expect(result.status).toBe("refunded"); // porque status === "succeeded"
+    expect(result.status).toBe("refunded");
     expect(result.raw).toEqual(
       expect.objectContaining({
         id: "re_456",
@@ -104,7 +103,13 @@ describe("StripeAdapter", () => {
   });
 });
 
+/**
+ * Suite de pruebas para MercadoPagoAdapter
+ */
 describe("MpAdapter", () => {
+  /**
+   * Prueba: Pay llama al SDK y normaliza resultado
+   */
   it("pay() debe llamar a payments.create y devolver un ChargeResult normalizado", async () => {
     const paymentsCreate = vi.fn().mockResolvedValue({
       id: "mp_pay_1",
@@ -120,17 +125,16 @@ describe("MpAdapter", () => {
       },
     };
 
-    const adapter = new MpAdapter(fakeMpSdk);
+    const adapter = new MercadoPagoAdapter(fakeMpSdk);
 
     const input: ChargeInput = {
       amount: 2000,
       currency: "ARS",
-        token: '345677'
+      token: '345677'
     } as ChargeInput;
 
     const result = await adapter.pay(input);
 
-    // 1) Llamó al SDK con el monto correcto
     expect(paymentsCreate).toHaveBeenCalledTimes(1);
     expect(paymentsCreate).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -138,7 +142,6 @@ describe("MpAdapter", () => {
       })
     );
 
-    // 2) Normalización de resultado
     expect(result.id).toBe("mp_pay_1");
     expect(result.status).toBe("approved");
     expect(result.raw).toEqual(
@@ -149,12 +152,15 @@ describe("MpAdapter", () => {
     );
   });
 
+  /**
+   * Prueba: Refund llama al SDK y normaliza resultado
+   */
   it("refund() debe llamar a payments.refund y devolver un RefundResult normalizado", async () => {
     const paymentsCreate = vi.fn();
 
     const paymentsRefund = vi.fn().mockResolvedValue({
       id: "mp_refund_1",
-      status: "approved", // supongamos que MP usa 'approved' para refunds correctos
+      status: "approved",
     });
 
     const fakeMpSdk = {
@@ -164,7 +170,7 @@ describe("MpAdapter", () => {
       },
     };
 
-    const adapter = new MpAdapter(fakeMpSdk);
+    const adapter = new MercadoPagoAdapter(fakeMpSdk);
 
     const input: RefundInput = {
       paymentId: "mp_pay_1",
@@ -173,7 +179,6 @@ describe("MpAdapter", () => {
 
     const result = await adapter.refund(input);
 
-    // 1) Verificar llamada a SDK
     expect(paymentsRefund).toHaveBeenCalledTimes(1);
     expect(paymentsRefund).toHaveBeenCalledWith(
       input.paymentId,
@@ -182,9 +187,8 @@ describe("MpAdapter", () => {
       })
     );
 
-    // 2) Normalización de dominio
     expect(result.id).toBe("mp_refund_1");
-    expect(result.status).toBe("refunded"); // según tu adapter: status === "approved" → "refunded"
+    expect(result.status).toBe("refunded");
     expect(result.raw).toEqual(
       expect.objectContaining({
         id: "mp_refund_1",

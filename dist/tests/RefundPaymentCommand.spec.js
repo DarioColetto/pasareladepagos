@@ -1,0 +1,60 @@
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { RefundPaymentCommand } from '../core/commands/RefundPaymentCommand';
+import { eventBus } from '../core/events/EventBus';
+/**
+ * Suite de pruebas para RefundPaymentCommand
+ */
+describe('RefundPaymentCommand', () => {
+    const provider = 'stripe';
+    beforeEach(() => {
+        vi.restoreAllMocks();
+        vi.spyOn(eventBus, 'emit').mockResolvedValue();
+    });
+    /**
+     * Prueba: Reembolso exitoso emite evento PaymentRefunded
+     */
+    it('cuando el reembolso es exitoso (refunded) debe emitir PaymentRefunded', async () => {
+        const input = {
+            paymentId: 'pay_123',
+            amount: 80,
+        };
+        const refundResult = {
+            id: 'ref_999',
+            status: 'refunded',
+        };
+        const strategy = {
+            refund: vi.fn().mockResolvedValue(refundResult),
+        };
+        const command = new RefundPaymentCommand(strategy, input, provider);
+        const result = await command.execute();
+        expect(strategy.refund).toHaveBeenCalledTimes(1);
+        expect(strategy.refund).toHaveBeenCalledWith(input);
+        expect(eventBus.emit).toHaveBeenCalledTimes(1);
+        expect(eventBus.emit).toHaveBeenCalledWith('PaymentRefunded', {
+            paymentId: refundResult.id,
+            amount: input.amount,
+            provider,
+        });
+        expect(result).toBe(refundResult);
+    });
+    /**
+     * Prueba: Reembolso fallido no emite evento
+     */
+    it('si el reembolso no es "refunded" no debe emitir ningún evento', async () => {
+        const input = {
+            paymentId: 'pay_555',
+        };
+        const refundResult = {
+            id: 'ref_000',
+            status: 'failed',
+        };
+        const strategy = {
+            refund: vi.fn().mockResolvedValue(refundResult),
+        };
+        const command = new RefundPaymentCommand(strategy, input, provider);
+        const result = await command.execute();
+        expect(strategy.refund).toHaveBeenCalledWith(input);
+        expect(eventBus.emit).not.toHaveBeenCalled();
+        expect(result).toBe(refundResult);
+    });
+});

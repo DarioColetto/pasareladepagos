@@ -4,6 +4,9 @@ import type { RefundInput, RefundResult } from '../core/payments/PaymentTypes';
 import type { PaymentStrategy } from '../core/payments/strategies/PaymentStrategy';
 import { eventBus } from '../core/events/EventBus';
 
+/**
+ * Suite de pruebas para RefundPaymentCommand
+ */
 describe('RefundPaymentCommand', () => {
   const provider = 'stripe';
 
@@ -12,6 +15,9 @@ describe('RefundPaymentCommand', () => {
     vi.spyOn(eventBus, 'emit').mockResolvedValue();
   });
 
+  /**
+   * Prueba: Reembolso exitoso emite evento PaymentRefunded
+   */
   it('cuando el reembolso es exitoso (refunded) debe emitir PaymentRefunded', async () => {
     const input: RefundInput = {
       paymentId: 'pay_123',
@@ -44,6 +50,9 @@ describe('RefundPaymentCommand', () => {
     expect(result).toBe(refundResult);
   });
 
+  /**
+   * Prueba: Reembolso fallido no emite evento
+   */
   it('si el reembolso no es "refunded" no debe emitir ningún evento', async () => {
     const input: RefundInput = {
       paymentId: 'pay_555',

@@ -6,31 +6,62 @@ import {
 } from "../PaymentTypes";
 import { PaymentProvider } from "./PaymentProvider";
 
-export class StripeAdapter  implements PaymentProvider{
+/**
+ * Adaptador para Stripe que implementa la interfaz PaymentProvider
+ * 
+ * Patrón Adapter: Adapta la API específica de Stripe a nuestra interfaz uniforme
+ * Convierte los objetos de entrada/salida de Stripe a nuestro dominio interno
+ */
+export class StripeAdapter implements PaymentProvider {
+  /**
+   * Crea una instancia de StripeAdapter
+   * 
+   * @param sdk - Instancia del SDK de Stripe
+   */
   constructor(
     private sdk: {
-      charges: { create: (p: any) => Promise<any> };
-      refunds: { create: (p: any) => Promise<any> };
+      charges: { create: (parametros: any) => Promise<any> };
+      refunds: { create: (parametros: any) => Promise<any> };
     }
   ) {}
-  async pay(i: ChargeInput): Promise<ChargeResult> {
-    const res = await this.sdk.charges.create({
-      amount: i.amount,
-      currency: i.currency,
-      source: i.token,
-      metadata: i.metadata,
+
+  /**
+   * Realiza un cargo mediante Stripe
+   * 
+   * @param input - Datos del cargo a realizar
+   * @returns Promesa con el resultado del cargo normalizado
+   */
+  async pay(input: ChargeInput): Promise<ChargeResult> {
+    const respuesta = await this.sdk.charges.create({
+      amount: input.amount,
+      currency: input.currency,
+      source: input.token,
+      metadata: input.metadata,
     });
-    return { id: res.id, status: res.paid ? "approved" : "declined", raw: res };
+    
+    return { 
+      id: respuesta.id, 
+      status: respuesta.paid ? "approved" : "declined", 
+      raw: respuesta 
+    };
   }
-  async refund(i: RefundInput): Promise<RefundResult> {
-    const res = await this.sdk.refunds.create({
-      payment_intent: i.paymentId,
-      amount: i.amount,
+
+  /**
+   * Realiza un reembolso mediante Stripe
+   * 
+   * @param input - Datos del reembolso a realizar
+   * @returns Promesa con el resultado del reembolso normalizado
+   */
+  async refund(input: RefundInput): Promise<RefundResult> {
+    const respuesta = await this.sdk.refunds.create({
+      payment_intent: input.paymentId,
+      amount: input.amount,
     });
+    
     return {
-      id: res.id,
-      status: res.status === "succeeded" ? "refunded" : "failed",
-      raw: res,
+      id: respuesta.id,
+      status: respuesta.status === "succeeded" ? "refunded" : "failed",
+      raw: respuesta,
     };
   }
 }

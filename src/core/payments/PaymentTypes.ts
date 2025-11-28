@@ -1,4 +1,11 @@
-// Tipos existentes que me pasaste
+/**
+ * Tipos principales para el sistema de pagos
+ * Define las interfaces y tipos de datos para operaciones de pago
+ */
+
+/**
+ * Datos de entrada para un cargo (charge)
+ */
 export type ChargeInput = {
   amount: number;
   currency: "ARS" | "USD";
@@ -6,33 +13,35 @@ export type ChargeInput = {
   metadata?: Record<string, string>;
 };
 
+/**
+ * Resultado de un cargo exitoso o fallido
+ */
 export type ChargeResult = {
   id: string;
   status: "approved" | "declined";
   raw?: unknown;
 };
 
+/**
+ * Datos de entrada para un reembolso (refund)
+ */
 export type RefundInput = { 
   paymentId: string; 
-  amount?: number 
+  amount?: number;
 };
 
+/**
+ * Resultado de un reembolso exitoso o fallido
+ */
 export type RefundResult = {
   id: string;
   status: "refunded" | "failed";
   raw?: unknown;
 };
 
-// Nuevos tipos necesarios para los patrones de diseño
-export interface PaymentMethod {
-  processPayment(amount: number, details: ChargeInput): Promise<ChargeResult>;
-}
-
-export interface PaymentAdapter {
-  charge(input: ChargeInput): Promise<ChargeResult>;
-  refund(input: RefundInput): Promise<RefundResult>;
-}
-
+/**
+ * Resultado genérico de una operación de pago
+ */
 export interface PaymentResult {
   success: boolean;
   transactionId?: string;
@@ -41,13 +50,17 @@ export interface PaymentResult {
   timestamp: Date;
 }
 
-// Enums para mejor organización
+/**
+ * Proveedores de pago soportados
+ */
 export enum PaymentProviders {
   STRIPE = 'stripe',
-  PAYPAL = 'paypal',
-  MERCADOPAGO = 'mercadopago'
+  MERCADOPAGO = 'mp'
 }
 
+/**
+ * Eventos del sistema de pagos
+ */
 export enum PaymentEvents {
   PAYMENT_CREATED = 'payment:created',
   PAYMENT_PROCESSED = 'payment:processed',
@@ -55,7 +68,9 @@ export enum PaymentEvents {
   PAYMENT_REFUNDED = 'payment:refunded'
 }
 
-// Tipos para el Event Bus
+/**
+ * Datos para eventos de pago
+ */
 export type PaymentEventData = {
   paymentId: string;
   amount: number;
@@ -65,7 +80,9 @@ export type PaymentEventData = {
   timestamp: Date;
 };
 
-// Tipos para Commands
+/**
+ * Comandos del sistema de pagos
+ */
 export type ProcessPaymentCommand = {
   type: 'PROCESS_PAYMENT';
   payload: ChargeInput & { provider: PaymentProviders };
@@ -78,21 +95,11 @@ export type RefundPaymentCommand = {
 
 export type PaymentCommand = ProcessPaymentCommand | RefundPaymentCommand;
 
-// Factory types
+/**
+ * Configuración para proveedores de pago
+ */
 export type PaymentConfig = {
   apiKey: string;
   environment: 'sandbox' | 'production';
   timeout?: number;
-};
-
-// Strategy types
-export type PaymentStrategy = {
-  executePayment(chargeInput: ChargeInput): Promise<ChargeResult>;
-  executeRefund(refundInput: RefundInput): Promise<RefundResult>;
-};
-
-// Decorator types
-export type PaymentDecorator = {
-  process(chargeInput: ChargeInput): Promise<ChargeResult>;
-  refund(refundInput: RefundInput): Promise<RefundResult>;
 };

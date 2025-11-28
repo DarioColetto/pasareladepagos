@@ -1,10 +1,15 @@
-
 import { describe, it, expect } from 'vitest';
 import { PaymentFactory } from '../core/payments/factories/PaymentFactory';
 import { RetryDecorator } from '../core/payments/decorators/RetryDecorator';
 import { TelemetryDecorator } from '../core/payments/decorators/TelemetryDecorator';
 
+/**
+ * Suite de pruebas para Payment Strategy con Decorators
+ */
 describe('Payment Strategy + Decorators', () => {
+  /**
+   * Prueba: Charge aprobado con Stripe mock y decorators
+   */
   it('charge aprobado con stripe mock', async () => {
     const s = PaymentFactory.create('stripe');
     const wrapped = new TelemetryDecorator(new RetryDecorator(s), 'stripe');
@@ -13,6 +18,9 @@ describe('Payment Strategy + Decorators', () => {
     expect(out.id).toMatch(/^st_|^mp_/);
   });
 
+  /**
+   * Prueba: Refund aprobado con MercadoPago mock y decorators
+   */
   it('refund aprobado con mp mock', async () => {
     const s = PaymentFactory.create('mp');
     const wrapped = new TelemetryDecorator(new RetryDecorator(s), 'mp');

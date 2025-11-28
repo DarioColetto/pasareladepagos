@@ -12,6 +12,10 @@ vi.mock('../core/payments/facade/PaymentService', () => ({
   },
 }));
 
+/**
+ * Crea una aplicación Express para testing
+ * @returns {express.Express} Aplicación Express configurada
+ */
 function createApp() {
   const app = express();
   app.use(express.json());
@@ -27,6 +31,9 @@ describe('API /payments', () => {
     vi.clearAllMocks();
   });
 
+  /**
+   * Prueba: Carga exitosa de pago
+   */
   it('POST /payments/charge → 200 y responde lo que devuelve PaymentService.charge', async () => {
     (PaymentService.charge as any).mockResolvedValue({
       id: 'ch_123',
@@ -60,12 +67,15 @@ describe('API /payments', () => {
     });
   });
 
+  /**
+   * Prueba: Validación de body inválido
+   */
   it('POST /payments/charge → 400 por body inválido (falla schema) y NO llama a PaymentService', async () => {
     const res = await request(app)
       .post('/payments/charge')
       .send({
-        provider: '', // inválido
-        amount: 'abc', // inválido
+        provider: '',
+        amount: 'abc',
       })
       .expect(400);
 
@@ -73,6 +83,9 @@ describe('API /payments', () => {
     expect(PaymentService.charge).not.toHaveBeenCalled();
   });
 
+  /**
+   * Prueba: Manejo de errores del servicio
+   */
   it('POST /payments/charge → 500 cuando PaymentService.charge lanza un error', async () => {
     (PaymentService.charge as any).mockRejectedValue(new Error('Service error'));
 
@@ -86,9 +99,15 @@ describe('API /payments', () => {
       })
       .expect(500);
 
-    expect(res.body).toEqual({ error: 'Service error' });
+    expect(res.body).toEqual({ 
+      error: 'Service error',
+      codigo: 'ERROR_DESCONOCIDO'
+    });
   });
 
+  /**
+   * Prueba: Reembolso exitoso
+   */
   it('POST /payments/refund → 200 y responde lo que devuelve PaymentService.refund', async () => {
     (PaymentService.refund as any).mockResolvedValue({
       id: 're_123',
